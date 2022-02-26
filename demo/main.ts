@@ -24,11 +24,13 @@ const textArea = document.querySelector<HTMLTextAreaElement>('#textArea');
 if(!textArea) throw new Error("missing Text area?");
 
 const yTextArea = doc.getText("textArea");
-const __AreaBinding = new TextAreaBinding(yTextArea, textArea);
+//@ts-ignore
+const areaBinding = new TextAreaBinding(yTextArea, textArea);
 
 const textInput = document.querySelector<HTMLInputElement>('#textInput');
 if(!textInput) throw new Error("missing Text area?");
 
 const yTextInput = doc.getText("textInput");
-const __InputBinding = new TextAreaBinding(yTextInput, textInput);
+//@ts-ignore
+const inputBinding = new TextAreaBinding(yTextInput, textInput);
 

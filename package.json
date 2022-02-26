@@ -1,5 +1,14 @@
 {
   "name": "Y-TextArea",
+  "files": ["dist"],
+  "main": "./dist/y-textArea.umd.js",
+  "module": "./dist/y-textArea.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/y-textArea.es.js",
+      "require": "./dist/y-textArea.umd.js"
+    }
+  },
   "private": true,
   "version": "0.0.0",
   "scripts": {
