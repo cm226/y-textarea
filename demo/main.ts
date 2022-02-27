@@ -35,6 +35,6 @@ const yTextInput = doc.getText("textInput");
 //@ts-ignore
 const inputBinding = new TextAreaBinding(yTextInput, textInput);
 
-const areaCursors = new TextAreaCursors(wsProvider.awareness, textArea);
-const inputCursors = new TextAreaCursors(wsProvider.awareness, textInput);
+const areaCursors = new TextAreaCursors(wsProvider.awareness, yTextArea, textArea);
+const inputCursors = new TextAreaCursors(wsProvider.awareness, yTextInput, textInput);
 
