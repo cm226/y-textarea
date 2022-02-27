@@ -3,9 +3,6 @@ import diff from 'fast-diff'
 
 export class TextAreaBinding {
 
-    private _textArea : HTMLTextAreaElement| HTMLInputElement;
-    private _yText : Y.Text;
-
     constructor(yText : Y.Text, textField : HTMLTextAreaElement | HTMLInputElement)
     {
         let doc = yText.doc as Y.Doc;
@@ -16,10 +13,7 @@ export class TextAreaBinding {
         if(textField.selectionStart === undefined || textField.selectionEnd === undefined){
             throw new Error("textField argument doesn't look like a text field");
         }
-        this.createRange(textField); // check if textField is supported
 
-        this._yText = yText;
-        this._textArea = textField;
         textField.value = yText.toString();
 
         let relPosStart : Y.RelativePosition;
@@ -48,8 +42,8 @@ export class TextAreaBinding {
         textField.addEventListener('input', ()=>{
             const r = this.createRange(textField);
 
-            let oldContent = this._yText.toString()
-            let content = this._textArea.value
+            let oldContent = yText.toString()
+            let content = textField.value
             let diffs = diff(oldContent, content, r.left)
             let pos = 0
             for (let i = 0; i < diffs.length; i++) {
@@ -57,9 +51,9 @@ export class TextAreaBinding {
             if (d[0] === 0) { // EQUAL
                 pos += d[1].length
             } else if (d[0] === -1) { // DELETE
-                this._yText.delete(pos, d[1].length)
+                yText.delete(pos, d[1].length)
             } else { // INSERT
-                this._yText.insert(pos, d[1])
+                yText.insert(pos, d[1])
                 pos += d[1].length
             }
             }
@@ -67,12 +61,8 @@ export class TextAreaBinding {
     }
 
     private createRange(element : HTMLInputElement|HTMLTextAreaElement) {
-        const left = element.selectionStart;
-        const right = element.selectionEnd;
-
-        if(left === null || right === null){
-            throw new Error("selectionStart or selectionEnd is null, is HTMLInputElement type=text? ")
-        }
+        const left = element.selectionStart as number;
+        const right = element.selectionEnd as number;
         return {left, right};
     }
 }
