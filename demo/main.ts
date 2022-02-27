@@ -2,6 +2,7 @@
 import * as Y from 'yjs'
 import { WebsocketProvider } from 'y-websocket'
 import {TextAreaBinding} from '../src/y-textArea'
+import {TextAreaCursors} from '../src/y-textArea-Cursors'
 import './style.css'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
@@ -33,4 +34,7 @@ if(!textInput) throw new Error("missing Text area?");
 const yTextInput = doc.getText("textInput");
 //@ts-ignore
 const inputBinding = new TextAreaBinding(yTextInput, textInput);
+
+const areaCursors = new TextAreaCursors(wsProvider.awareness, textArea);
+const inputCursors = new TextAreaCursors(wsProvider.awareness, textInput);
 
