@@ -10,4 +10,7 @@
 #textArea{
   height: 256px;
   width: 256px;
+
+  overflow-wrap:normal;
+  overflow-x: scroll;
 }

@@ -1,5 +1,6 @@
 import * as Y from 'yjs'
 import getCaretCoordinates from 'textarea-caret'
+import intersection from 'rectangle-overlap'
 import * as awarenessProtocol from 'y-protocols/awareness.js'
 
 const events = [
@@ -12,17 +13,35 @@ const events = [
     'selectend'
 ];
 
+export interface color{
+    r : number;
+    g : number;
+    b : number;
+}
+
+export interface options{
+    clientName? : string,
+    color? : color
+}
+
 class Cursor{
 
     private _div : HTMLDivElement;
+    private _color : color;
+    private _fontSize : string;
+    private _selectedIndex : {start:number, end:number};
 
-    constructor(fontSize : string){
+    constructor(fontSize : string, cssColor : color) {
+        this._selectedIndex = {start:0, end:0};
+        this._fontSize = fontSize;
+        this._color = cssColor;
         this._div = document.createElement('div')
         this._div.style.position = 'absolute'
-        this._div.style.backgroundColor = 'rgba(255, 0, 0, 0.4)'
+        this._div.style.backgroundColor = `rgba(${cssColor.r}, ${cssColor.g}, ${cssColor.b}, 0.4)`
         this._div.style.height = fontSize
         this._div.style.width = '1px'
         this._div.style.display = 'none';
+        this._div.style.borderRadius = '2px';
         document.body.appendChild(this._div);
     }
 
@@ -34,13 +53,64 @@ class Cursor{
         this._div.style.display = 'none';
     }
 
-    setPosition(top : number, left : number){
-        this._div.style.top = top + 'px';
-        this._div.style.left = left + 'px';
+    setPosition(start : number, end: number) {
+        this._selectedIndex = {start,end};
     }
 
     setWidth(width: number){
         this._div.style.width = width+'px';
+        if(width===1){
+            this._div.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 1.0)`
+        } else{
+            this._div.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 0.4)`
+        }
+    }
+
+    reposition(textFeild : HTMLTextAreaElement | HTMLInputElement) {
+
+        const startCoordinates = getCaretCoordinates(textFeild, this._selectedIndex.start);
+
+        const screenSpaceTop = textFeild.offsetTop
+        - textFeild.scrollTop
+        + startCoordinates.top as number;
+
+        const screenSpaceLeft = textFeild.offsetLeft
+        - textFeild.scrollLeft
+        + startCoordinates.left as number;
+
+        let width = 1;
+        if(this._selectedIndex.start !== this._selectedIndex.end) {
+            let endCoordinates = getCaretCoordinates(textFeild, this._selectedIndex.end);
+            width = endCoordinates.left - startCoordinates.left;
+        }
+
+        const areaScreenSpace = {
+            x : textFeild.offsetLeft,
+            y : textFeild.offsetTop,
+            width : textFeild.clientWidth,
+            height : textFeild.clientHeight
+        };
+
+        const cursorScreenSpace = {
+            x : screenSpaceLeft,
+            y : screenSpaceTop,
+            width : width,
+            height : parseInt(this._fontSize)
+        }
+
+        // Check if the selected is out of view
+        const overlap = intersection(areaScreenSpace, cursorScreenSpace);
+        if(!overlap) {
+            this.hide();
+            return;
+        } 
+
+        this._div.style.top = overlap.y + 'px';
+        this._div.style.left = overlap.x + 'px'
+
+        this.setWidth(overlap.width); 
+
+        this.show();
     }
 }
 
@@ -51,16 +121,19 @@ export class TextAreaCursors {
 
     private _cursors : Map<number,Cursor> = new Map<number, Cursor>();
     private _areaID : string;
+    private _textField : HTMLTextAreaElement | HTMLInputElement;
 
     constructor(
         awareness : awarenessProtocol.Awareness,
         yText : Y.Text,
-        textFeild : HTMLTextAreaElement | HTMLInputElement) {
+        textField : HTMLTextAreaElement | HTMLInputElement, 
+        options : options) {
 
             this._areaID = (TextAreaCursors.areaIDCounter++).toString();
+            this._textField = textField;
 
-            if(textFeild.selectionStart === null || textFeild.selectionEnd === null){
-                throw new Error("Sunsupported Input type");
+            if(textField.selectionStart === null || textField.selectionEnd === null){
+                throw new Error("unSupported Input type");
             }
 
             const doc = yText.doc;
@@ -69,13 +142,16 @@ export class TextAreaCursors {
             }
 
             awareness.on('update', ()=>{
-                const fontSize = getComputedStyle(textFeild).getPropertyValue('font-size');
+                const fontSize = getComputedStyle(textField).getPropertyValue('font-size');
                 const changes = awareness.getStates();
                 for(const [clientID, change] of changes.entries()){
                     if(clientID === awareness.clientID) continue; // dont show local cursor
 
-                    if(!this._cursors.has(clientID)){
-                        this._cursors.set(clientID, new Cursor(fontSize));
+                    if(!this._cursors.has(clientID)) { 
+                        this._cursors.set(clientID, new Cursor(
+                            fontSize,
+                            options.color || {r:45, g:80, b:237}
+                        ));
                     }
 
                     const user = change[this._areaID]
@@ -87,7 +163,7 @@ export class TextAreaCursors {
                     const encodedEnd = user["end"] as any
                     const selection = user["selection"] as boolean
                     
-                    if(!selection){
+                    if(!selection) {
                         cursorMarker?.hide();
                         continue;
                     }
@@ -103,43 +179,16 @@ export class TextAreaCursors {
                         continue;
                     }
 
-                    const startCoordinates = getCaretCoordinates(textFeild, start.index);
-
-                    const divBottom = startCoordinates.top + parseInt(fontSize);
-                    if(startCoordinates.left > textFeild.clientWidth || divBottom > textFeild.clientHeight) {
-                        cursorMarker?.hide();
-                        continue;
-                    } 
-
-                    cursorMarker?.setPosition(
-                        textFeild.offsetTop
-                        - textFeild.scrollTop
-                        + startCoordinates.top,
-
-                        textFeild.offsetLeft
-                        - textFeild.scrollLeft
-                        + startCoordinates.left
-                    );
-
-                    
-                    if(start.index !== end.index) {
-                        let endCoordinates = getCaretCoordinates(textFeild, end.index);
-                        let selectionWidth = endCoordinates.left - startCoordinates.left;
-                        let avialableSpace = textFeild.clientWidth - startCoordinates.left;
-                        cursorMarker?.setWidth(Math.min(selectionWidth, avialableSpace));
-                    } else{
-                        cursorMarker?.setWidth(1); 
-                    }
-
-                    cursorMarker?.show();
+                    cursorMarker?.setPosition(start.index, end.index);
+                    cursorMarker?.reposition(textField);
                 }
             });
 
             for(const event of events){
-                textFeild.addEventListener(event, ()=>{
+                textField.addEventListener(event, ()=>{
                     
-                    const start = textFeild.selectionStart as number;
-                    const end = textFeild.selectionEnd as number;
+                    const start = textField.selectionStart as number;
+                    const end = textField.selectionEnd as number;
 
                     const startRel = Y.createRelativePositionFromTypeIndex(yText, start);
                     const endRel = Y.createRelativePositionFromTypeIndex(yText, end);
@@ -152,12 +201,20 @@ export class TextAreaCursors {
                     });
                 });
 
-                textFeild.addEventListener('focusout', ()=>{
+                textField.addEventListener('focusout', ()=>{
                     awareness.setLocalStateField(this._areaID, {
                         user: awareness.clientID,
                         selection : false
                     });
                 });
+
+                textField.addEventListener('scroll', ()=>{this.repositionCursors();});
             }
+    }
+
+    public repositionCursors() {
+        for(const [_index, cursor] of this._cursors){
+            cursor.reposition(this._textField);
+        }
     }
 }
