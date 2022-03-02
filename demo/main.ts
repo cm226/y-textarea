@@ -15,7 +15,7 @@ app.innerHTML = `
 
 
 const doc = new Y.Doc()
-const wsProvider = new WebsocketProvider('ws://localhost:1234', 'my-roomname', doc)
+const wsProvider = new WebsocketProvider(`ws://${window.location.hostname}:1234`, 'my-roomname', doc)
 
 wsProvider.on('status', (event:any) => {
   console.log(event.status) // logs "connected" or "disconnected"
@@ -35,6 +35,6 @@ const yTextInput = doc.getText("textInput");
 //@ts-ignore
 const inputBinding = new TextAreaBinding(yTextInput, textInput);
 
-const areaCursors = new TextAreaCursors(wsProvider.awareness, yTextArea, textArea, {});
-const inputCursors = new TextAreaCursors(wsProvider.awareness, yTextInput, textInput, { color : {r:255, g:0, b:0}});
+const areaCursors = new TextAreaCursors(wsProvider.awareness, yTextArea, textArea, {clientName:"Jaws"});
+const inputCursors = new TextAreaCursors(wsProvider.awareness, yTextInput, textInput, { color : {r:255, g:0, b:0}, clientName:"bawz"});
 

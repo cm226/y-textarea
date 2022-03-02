@@ -27,11 +27,16 @@ export interface options{
 class Cursor{
 
     private _div : HTMLDivElement;
+    private _nameDiv? : HTMLDivElement;
+
     private _color : color;
     private _fontSize : string;
     private _selectedIndex : {start:number, end:number};
 
-    constructor(fontSize : string, cssColor : color) {
+    private _visible : boolean;
+
+    constructor(fontSize : string, cssColor : color, name? : string) {
+        this._visible = false;
         this._selectedIndex = {start:0, end:0};
         this._fontSize = fontSize;
         this._color = cssColor;
@@ -43,14 +48,31 @@ class Cursor{
         this._div.style.display = 'none';
         this._div.style.borderRadius = '2px';
         document.body.appendChild(this._div);
+
+        if(name !== undefined){
+            this._nameDiv = document.createElement('div')
+            this._nameDiv.style.position = 'absolute';
+            this._nameDiv.style.padding = '3px';
+            this._nameDiv.style.borderRadius = '3px';
+            this._nameDiv.style.display = 'none';
+            this._nameDiv.style.backgroundColor = `rgba(${cssColor.r}, ${cssColor.g}, ${cssColor.b}, 1.0)`
+            this._nameDiv.innerHTML = name;
+            document.body.appendChild(this._nameDiv);
+        }
     }
 
     show() {
+        this._visible = true;
         this._div.style.display = 'block';
+        if(this._nameDiv)
+            this._nameDiv.style.display = 'block';
     }
 
     hide() {
+        this._visible = false;
         this._div.style.display = 'none';
+        if(this._nameDiv)
+            this._nameDiv.style.display = 'none';
     }
 
     setPosition(start : number, end: number) {
@@ -66,7 +88,7 @@ class Cursor{
         }
     }
 
-    reposition(textFeild : HTMLTextAreaElement | HTMLInputElement) {
+    rePosition(textFeild : HTMLTextAreaElement | HTMLInputElement) {
 
         const startCoordinates = getCaretCoordinates(textFeild, this._selectedIndex.start);
 
@@ -106,11 +128,24 @@ class Cursor{
         } 
 
         this._div.style.top = overlap.y + 'px';
-        this._div.style.left = overlap.x + 'px'
+        this._div.style.left = overlap.x + 'px';
+
+        if(this._nameDiv){
+            const height = getComputedStyle(this._nameDiv).getPropertyValue('height');
+            this._nameDiv.style.top = overlap.y + parseInt(height) +'px';
+            this._nameDiv.style.left = overlap.x + 'px';
+        }
+        
 
         this.setWidth(overlap.width); 
 
         this.show();
+    }
+
+    destroy(){
+        document.body.removeChild(this._div);
+        if(this._nameDiv)
+            document.body.removeChild(this._nameDiv);
     }
 }
 
@@ -141,7 +176,19 @@ export class TextAreaCursors {
                 throw new Error("Missing doc on yText");
             }
 
-            awareness.on('update', ()=>{
+            awareness.on('update', (event : {removed: number[]}, transaction)=>{
+
+
+                if(event.removed.length != 0){
+                    for(const id of event.removed){
+                        if(this._cursors.has(id)){
+                            const cursor = this._cursors.get(id);
+                            cursor?.destroy();
+                            this._cursors.delete(id);
+                        }
+                    }
+                }
+
                 const fontSize = getComputedStyle(textField).getPropertyValue('font-size');
                 const changes = awareness.getStates();
                 for(const [clientID, change] of changes.entries()){
@@ -150,7 +197,8 @@ export class TextAreaCursors {
                     if(!this._cursors.has(clientID)) { 
                         this._cursors.set(clientID, new Cursor(
                             fontSize,
-                            options.color || {r:45, g:80, b:237}
+                            options.color || {r:45, g:80, b:237},
+                            options.clientName
                         ));
                     }
 
@@ -180,7 +228,7 @@ export class TextAreaCursors {
                     }
 
                     cursorMarker?.setPosition(start.index, end.index);
-                    cursorMarker?.reposition(textField);
+                    cursorMarker?.rePosition(textField);
                 }
             });
 
@@ -208,13 +256,13 @@ export class TextAreaCursors {
                     });
                 });
 
-                textField.addEventListener('scroll', ()=>{this.repositionCursors();});
+                textField.addEventListener('scroll', ()=>{this.rePositionCursors();});
             }
     }
 
-    public repositionCursors() {
+    public rePositionCursors() {
         for(const [_index, cursor] of this._cursors){
-            cursor.reposition(this._textField);
+            cursor.rePosition(this._textField);
         }
     }
 }

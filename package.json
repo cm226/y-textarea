@@ -14,7 +14,7 @@
   "types": "./dist/y-textArea.d.ts",
   "version": "0.1.1",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "echo \"No test specified\""
