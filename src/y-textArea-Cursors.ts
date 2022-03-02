@@ -20,6 +20,7 @@ export interface color{
 }
 
 export interface options{
+    awareness : awarenessProtocol.Awareness,
     clientName? : string,
     color? : color
 }
@@ -33,10 +34,7 @@ class Cursor{
     private _fontSize : string;
     private _selectedIndex : {start:number, end:number};
 
-    private _visible : boolean;
-
     constructor(fontSize : string, cssColor : color, name? : string) {
-        this._visible = false;
         this._selectedIndex = {start:0, end:0};
         this._fontSize = fontSize;
         this._color = cssColor;
@@ -62,14 +60,12 @@ class Cursor{
     }
 
     show() {
-        this._visible = true;
         this._div.style.display = 'block';
         if(this._nameDiv)
             this._nameDiv.style.display = 'block';
     }
 
     hide() {
-        this._visible = false;
         this._div.style.display = 'none';
         if(this._nameDiv)
             this._nameDiv.style.display = 'none';
@@ -176,7 +172,7 @@ export class TextAreaCursors {
                 throw new Error("Missing doc on yText");
             }
 
-            awareness.on('update', (event : {removed: number[]}, transaction)=>{
+            awareness.on('update', (event : {removed: number[]})=>{
 
 
                 if(event.removed.length != 0){
@@ -261,7 +257,7 @@ export class TextAreaCursors {
     }
 
     public rePositionCursors() {
-        for(const [_index, cursor] of this._cursors){
+        for(const [_index, cursor] of this._cursors) {
             cursor.rePosition(this._textField);
         }
     }
