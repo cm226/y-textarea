@@ -1,5 +1,8 @@
 const path = require('path')
 const { defineConfig } = require('vite')
+import typescript from '@rollup/plugin-typescript'
+
+const resolvePath = (str) => path.resolve(__dirname, str)
 
 module.exports = defineConfig({
   build: {
@@ -19,7 +22,17 @@ module.exports = defineConfig({
           'fast-diff': 'diff',
           'yjs' : 'Y'
         }
-      }
+      },
+      plugins: [
+        typescript({
+          'target': 'es2020',
+          'rootDir': resolvePath('./src'),
+          'declaration': true,
+          'declarationDir': resolvePath('./dist'),
+          exclude: resolvePath('./node_modules/**'),
+          allowSyntheticDefaultImports: true
+        })
+      ]
     }
   }
 })

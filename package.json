@@ -1,6 +1,8 @@
 {
-  "name": "Y-TextArea",
-  "files": ["dist"],
+  "name": "y-textarea",
+  "files": [
+    "dist"
+  ],
   "main": "./dist/y-textArea.umd.js",
   "module": "./dist/y-textArea.es.js",
   "exports": {
@@ -9,20 +11,25 @@
       "require": "./dist/y-textArea.umd.js"
     }
   },
-  "private": true,
+  "types": "./dist/y-textArea.d.ts",
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "echo \"No test specified\""
   },
   "devDependencies": {
+    "np": "^7.6.0",
     "typescript": "^4.5.4",
     "vite": "^2.8.0",
-    "y-websocket": "^1.3.18"
+    "y-websocket": "^1.3.18",
+    "@rollup/plugin-typescript": "^8.3.1"
+  },
+  "peerDependencies": {
+    "yjs": "^13.5.27"
   },
   "dependencies": {
-    "fast-diff": "^1.2.0",
-    "yjs": "^13.5.27"
+    "fast-diff": "^1.2.0"
   }
 }
