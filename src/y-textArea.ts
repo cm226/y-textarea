@@ -1,9 +1,17 @@
+import { TextAreaCursors } from './y-textArea-Cursors'
+import { options } from './y-textarea-options';
+
 import * as Y from 'yjs'
 import diff from 'fast-diff'
 
 export class TextAreaBinding {
 
-    constructor(yText : Y.Text, textField : HTMLTextAreaElement | HTMLInputElement)
+    private _cursors? : TextAreaCursors;
+
+    constructor(
+        yText : Y.Text, 
+        textField : HTMLTextAreaElement | HTMLInputElement,
+        options? : options)
     {
         let doc = yText.doc as Y.Doc;
         if(doc === null){
@@ -12,6 +20,10 @@ export class TextAreaBinding {
 
         if(textField.selectionStart === undefined || textField.selectionEnd === undefined){
             throw new Error("textField argument doesn't look like a text field");
+        }
+
+        if(options) {
+            this._cursors = new TextAreaCursors(yText, textField, options)
         }
 
         textField.value = yText.toString();
@@ -64,5 +76,9 @@ export class TextAreaBinding {
         const left = element.selectionStart as number;
         const right = element.selectionEnd as number;
         return {left, right};
+    }
+
+    public rePositionCursors(){
+        this._cursors?.rePositionCursors();
     }
 }

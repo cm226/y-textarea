@@ -20,11 +20,13 @@
     "test": "echo \"No test specified\""
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.1",
+    "@types/textarea-caret": "^3.0.1",
     "np": "^7.6.0",
+    "tslib": "^2.3.1",
     "typescript": "^4.5.4",
     "vite": "^2.8.0",
-    "y-websocket": "^1.3.18",
-    "@rollup/plugin-typescript": "^8.3.1"
+    "y-websocket": "^1.3.18"
   },
   "peerDependencies": {
     "yjs": "^13.5.27"

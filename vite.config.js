@@ -14,12 +14,11 @@ module.exports = defineConfig({
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
-      external: ['fast-diff', 'yjs'],
+      external: ['yjs'],
       output: {
         // Provide global variables to use in the UMD build
         // for externalized deps
         globals: {
-          'fast-diff': 'diff',
           'yjs' : 'Y'
         }
       },
