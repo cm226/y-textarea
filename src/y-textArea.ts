@@ -1,9 +1,17 @@
+import { TextAreaCursors } from './y-textArea-Cursors'
+import { options } from './y-textarea-options';
+
 import * as Y from 'yjs'
 import diff from 'fast-diff'
 
 export class TextAreaBinding {
 
-    constructor(yText : Y.Text, textField : HTMLTextAreaElement | HTMLInputElement)
+    private _cursors? : TextAreaCursors;
+
+    constructor(
+        yText : Y.Text, 
+        textField : HTMLTextAreaElement | HTMLInputElement,
+        options? : options)
     {
         let doc = yText.doc as Y.Doc;
         if(doc === null){
@@ -14,12 +22,17 @@ export class TextAreaBinding {
             throw new Error("textField argument doesn't look like a text field");
         }
 
+        if(options) {
+            this._cursors = new TextAreaCursors(yText, textField, options)
+        }
+
         textField.value = yText.toString();
 
         let relPosStart : Y.RelativePosition;
         let relPosEnd : Y.RelativePosition;
-
+        let direction : typeof textField.selectionDirection;
         doc.on('beforeTransaction', () => {
+            direction = textField.selectionDirection
             const r = this.createRange(textField);
             relPosStart = Y.createRelativePositionFromTypeIndex(yText, r.left);
             relPosEnd = Y.createRelativePositionFromTypeIndex(yText, r.right);
@@ -30,12 +43,12 @@ export class TextAreaBinding {
 
             const startPos = Y.createAbsolutePositionFromRelativePosition(relPosStart, doc)
             const endPos = Y.createAbsolutePositionFromRelativePosition(relPosEnd, doc)
-
+            
             textField.value = yText.toString();
 
             if(startPos !== null && endPos !== null) {
-                textField.selectionStart = startPos.index;
-                textField.selectionEnd = endPos.index;
+                if(direction === null) direction = 'forward'
+                textField.setSelectionRange(startPos.index,endPos.index,direction);
             }
         });
 
@@ -64,5 +77,9 @@ export class TextAreaBinding {
         const left = element.selectionStart as number;
         const right = element.selectionEnd as number;
         return {left, right};
+    }
+
+    public rePositionCursors(){
+        this._cursors?.rePositionCursors();
     }
 }

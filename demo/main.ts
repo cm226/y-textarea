@@ -14,7 +14,7 @@ app.innerHTML = `
 
 
 const doc = new Y.Doc()
-const wsProvider = new WebsocketProvider('ws://localhost:1234', 'my-roomname', doc)
+const wsProvider = new WebsocketProvider(`ws://${window.location.hostname}:1234`, 'my-roomname', doc)
 
 wsProvider.on('status', (event:any) => {
   console.log(event.status) // logs "connected" or "disconnected"
@@ -23,14 +23,29 @@ wsProvider.on('status', (event:any) => {
 const textArea = document.querySelector<HTMLTextAreaElement>('#textArea');
 if(!textArea) throw new Error("missing Text area?");
 
-const yTextArea = doc.getText("textArea");
+const yText = doc.getText("textArea");
+
+const rand = Math.floor(Math.random()*3);
+const names = ["Tiger", "Penguin", "Cat"];
+const color = [{r:47, g:226, b:147}, {r:18, g:214, b:70}, {r:87, g:96, b:202}];
+
 //@ts-ignore
-const areaBinding = new TextAreaBinding(yTextArea, textArea);
+const areaBinding = new TextAreaBinding(
+  yText,
+  textArea,
+  {
+    awareness : wsProvider.awareness,
+    clientName:names[rand],
+    color : color[rand]
+  }
+  );
 
 const textInput = document.querySelector<HTMLInputElement>('#textInput');
 if(!textInput) throw new Error("missing Text area?");
 
 const yTextInput = doc.getText("textInput");
 //@ts-ignore
-const inputBinding = new TextAreaBinding(yTextInput, textInput);
-
+const inputBinding = new TextAreaBinding(yTextInput, textInput,{
+  awareness : wsProvider.awareness,
+  clientName:"wonder"
+});
