@@ -1,5 +1,6 @@
 {
   "name": "y-textarea",
+  "description": "Text area and input binding for Y.JS",
   "files": [
     "dist"
   ],
@@ -37,5 +38,14 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/cm226/y-textarea.git"
+  },
+  "homepage": "https://github.com/cm226/y-textarea#readme",
+  "keywords": [
+    "Yjs"
+  ],
+  "author": "Craig Matear <c.matear@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cm226/y-textarea/issues"
   }
 }
