@@ -140,6 +140,7 @@ export class TextAreaCursors {
     
     private static areaIDCounter = 0;
 
+    private _unobserveFns : VoidFunction[] = [];
     private _cursors : Map<number,Cursor> = new Map<number, Cursor>();
     private _areaID : string = '';
     private _textField? : HTMLTextAreaElement | HTMLInputElement;
@@ -161,7 +162,7 @@ export class TextAreaCursors {
             throw new Error("Missing doc on yText");
         }
 
-        options.awareness.on('update', (event : {removed: number[]})=>{
+        const awarenessUpdate = (event : {removed: number[]})=>{
             
             if(event.removed.length != 0){
                 for(const id of event.removed){
@@ -216,36 +217,44 @@ export class TextAreaCursors {
                 cursorMarker?.setPosition(start.index, end.index);
                 cursorMarker?.rePosition(textField);
             }
-        });
+        };
+        options.awareness.on('update', awarenessUpdate);
+        this._unobserveFns.push(()=>options.awareness.off('update',awarenessUpdate));
 
+
+        const textFieldChanged = ()=>{
+            const start = textField.selectionStart as number;
+            const end = textField.selectionEnd as number;
+
+            const startRel = Y.createRelativePositionFromTypeIndex(yText, start);
+            const endRel = Y.createRelativePositionFromTypeIndex(yText, end);
+
+            options.awareness.setLocalStateField(this._areaID, {
+                user: options.awareness.clientID,
+                selection : true,
+                start: JSON.stringify(startRel),
+                end : JSON.stringify(endRel),
+                name : options.clientName,
+                color: options.color || {r:45, g:80, b:237}
+            });
+        };
         for(const event of events){
-            textField.addEventListener(event, ()=>{
-                
-                const start = textField.selectionStart as number;
-                const end = textField.selectionEnd as number;
-
-                const startRel = Y.createRelativePositionFromTypeIndex(yText, start);
-                const endRel = Y.createRelativePositionFromTypeIndex(yText, end);
-
-                options.awareness.setLocalStateField(this._areaID, {
-                    user: options.awareness.clientID,
-                    selection : true,
-                    start: JSON.stringify(startRel),
-                    end : JSON.stringify(endRel),
-                    name : options.clientName,
-                    color: options.color || {r:45, g:80, b:237}
-                });
-            });
-
-            textField.addEventListener('focusout', ()=>{
-                options.awareness.setLocalStateField(this._areaID, {
-                    user: options.awareness.clientID,
-                    selection : false
-                });
-            });
-
-            textField.addEventListener('scroll', ()=>{this.rePositionCursors();});
+            textField.addEventListener(event,textFieldChanged);
+            this._unobserveFns.push(()=>{textField.removeEventListener(event, textFieldChanged)});
         }
+
+        const onFocusOut = ()=>{
+            options.awareness.setLocalStateField(this._areaID, {
+                user: options.awareness.clientID,
+                selection : false
+            });
+        };
+        textField.addEventListener('focusout',onFocusOut);
+        this._unobserveFns.push(()=>{textField.removeEventListener('focusout', onFocusOut)});
+
+        const onScroll = ()=>{this.rePositionCursors();}
+        textField.addEventListener('scroll', onScroll);
+        this._unobserveFns.push(()=>{textField.removeEventListener('scroll', onScroll)});
     }
 
     public rePositionCursors() {
@@ -254,5 +263,18 @@ export class TextAreaCursors {
                 cursor.rePosition(this._textField);
             }
         }
+    }
+
+    public destroy(){
+        for(const unobserveFn of this._unobserveFns){
+            unobserveFn();
+        }
+
+        this._unobserveFns = [];
+        for(const [__key, value] of this._cursors){
+            value.destroy();
+        }
+
+        this._cursors.clear();
     }
 }

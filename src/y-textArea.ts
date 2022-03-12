@@ -7,6 +7,7 @@ import diff from 'fast-diff'
 export class TextAreaBinding {
 
     private _cursors? : TextAreaCursors;
+    private _unobserveFns : VoidFunction[] = [];
 
     constructor(
         yText : Y.Text, 
@@ -25,20 +26,23 @@ export class TextAreaBinding {
         if(options) {
             this._cursors = new TextAreaCursors(yText, textField, options)
         }
-
+            
         textField.value = yText.toString();
 
         let relPosStart : Y.RelativePosition;
         let relPosEnd : Y.RelativePosition;
         let direction : typeof textField.selectionDirection;
-        doc.on('beforeTransaction', () => {
+        
+        const onDocBeforeTransaction = () => {
             direction = textField.selectionDirection
             const r = this.createRange(textField);
             relPosStart = Y.createRelativePositionFromTypeIndex(yText, r.left);
             relPosEnd = Y.createRelativePositionFromTypeIndex(yText, r.right);
-        });
+        };
+        doc.on('beforeTransaction', onDocBeforeTransaction);
+        this._unobserveFns.push(()=>doc.off('beforeTransaction', onDocBeforeTransaction));
 
-        yText.observe((__event, transaction)=>{
+        const yTextObserver = (__event : Y.YTextEvent, transaction : Y.Transaction)=>{
             if(transaction.local) return;
 
             const startPos = Y.createAbsolutePositionFromRelativePosition(relPosStart, doc)
@@ -50,9 +54,11 @@ export class TextAreaBinding {
                 if(direction === null) direction = 'forward'
                 textField.setSelectionRange(startPos.index,endPos.index,direction);
             }
-        });
+        };
+        yText.observe(yTextObserver);
+        this._unobserveFns.push(()=>yText.unobserve(yTextObserver));
 
-        textField.addEventListener('input', ()=>{
+        const onTextFieldInput = ()=>{
             const r = this.createRange(textField);
 
             let oldContent = yText.toString()
@@ -70,7 +76,9 @@ export class TextAreaBinding {
                 pos += d[1].length
             }
             }
-        });
+        };
+        textField.addEventListener('input', onTextFieldInput);
+        this._unobserveFns.push(()=>textField.removeEventListener('input', onTextFieldInput));
     }
 
     private createRange(element : HTMLInputElement|HTMLTextAreaElement) {
@@ -81,5 +89,17 @@ export class TextAreaBinding {
 
     public rePositionCursors(){
         this._cursors?.rePositionCursors();
+    }
+
+    public destroy(){
+        for(const unobserveFn of this._unobserveFns){
+            unobserveFn();
+        }
+
+        this._unobserveFns = [];
+
+        if(this._cursors){
+            this._cursors.destroy();
+        }
     }
 }

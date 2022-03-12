@@ -10,6 +10,7 @@ app.innerHTML = `
   <h1>Y-Text Area Demo</h1>
   <textarea id="textArea"></textarea>
   <input type="text" id="textInput"></input>
+  <button id="destroyBttn">Destroy</button>
 `
 
 
@@ -49,3 +50,10 @@ const inputBinding = new TextAreaBinding(yTextInput, textInput,{
   awareness : wsProvider.awareness,
   clientName:"wonder"
 });
+
+const destroyBttn = document.querySelector<HTMLInputElement>('#destroyBttn');
+if(destroyBttn !== null){
+  destroyBttn.onclick = ()=>{
+    areaBinding.destroy();
+  };
+}

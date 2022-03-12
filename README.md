@@ -74,6 +74,16 @@ There are some properties that y-textarea.js overwrites, so cant be styled using
 - height/width
 - display
 
+### Destroy Binding
+
+To destroy the binding call `destroy` on the `TextAreaBinding`. This will remove all event listeners and if used remove all cursors from the DOM. 
+
+```typescript
+const AreaBinding = new TextAreaBinding(yTextArea, textArea);
+...
+AreaBinding.destroy();
+```
+
 ### Caveats
 Currently multi-line select on text areas doesn't work. It turns out that this was pretty tricky to implement performantly. I might think of a way to do this in the future. For now when multi-line selection is being done the cursor will stay at the start of the selection. 
 
