@@ -42,8 +42,12 @@ export class TextAreaBinding {
         doc.on('beforeTransaction', onDocBeforeTransaction);
         this._unobserveFns.push(()=>doc.off('beforeTransaction', onDocBeforeTransaction));
 
+        let textfieldChanged = false;
         const yTextObserver = (__event : Y.YTextEvent, transaction : Y.Transaction)=>{
-            if(transaction.local) return;
+            if(transaction.local && textfieldChanged){
+                textfieldChanged = false;
+                return;
+            }
 
             const startPos = Y.createAbsolutePositionFromRelativePosition(relPosStart, doc)
             const endPos = Y.createAbsolutePositionFromRelativePosition(relPosEnd, doc)
@@ -59,8 +63,9 @@ export class TextAreaBinding {
         this._unobserveFns.push(()=>yText.unobserve(yTextObserver));
 
         const onTextFieldInput = ()=>{
+            textfieldChanged = true;
             const r = this.createRange(textField);
-
+                        
             let oldContent = yText.toString()
             let content = textField.value
             let diffs = diff(oldContent, content, r.left)
