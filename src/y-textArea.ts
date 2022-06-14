@@ -49,14 +49,17 @@ export class TextAreaBinding {
                 return;
             }
 
-            const startPos = Y.createAbsolutePositionFromRelativePosition(relPosStart, doc)
-            const endPos = Y.createAbsolutePositionFromRelativePosition(relPosEnd, doc)
-            
             textField.value = yText.toString();
 
-            if(startPos !== null && endPos !== null) {
-                if(direction === null) direction = 'forward'
-                textField.setSelectionRange(startPos.index,endPos.index,direction);
+            if((textField.getRootNode() as Document).activeElement === textField)
+            {
+                const startPos = Y.createAbsolutePositionFromRelativePosition(relPosStart, doc)
+                const endPos = Y.createAbsolutePositionFromRelativePosition(relPosEnd, doc)
+
+                if(startPos !== null && endPos !== null) {
+                    if(direction === null) direction = 'forward'
+                    textField.setSelectionRange(startPos.index,endPos.index,direction);
+                }
             }
         };
         yText.observe(yTextObserver);
