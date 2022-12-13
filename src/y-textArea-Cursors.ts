@@ -23,10 +23,13 @@ class Cursor{
     private _fontSize : string;
     private _selectedIndex : {start:number, end:number};
 
-    constructor(fontSize : string, cssColor : color, name? : string) {
+    private _parent : Element;
+
+    constructor(fontSize : string, cssColor : color, element: HTMLTextAreaElement | HTMLInputElement, name? : string, ) {
         this._selectedIndex = {start:-1, end:-1};
         this._fontSize = fontSize;
         this._color = cssColor;
+        this._parent = element.offsetParent || document.body;
         this._div = document.createElement('div')
         this._div.style.position = 'absolute'
         this._div.style.backgroundColor = `rgba(${cssColor.r}, ${cssColor.g}, ${cssColor.b}, 0.4)`
@@ -34,7 +37,7 @@ class Cursor{
         this._div.style.width = '1px'
         this._div.style.display = 'none';
         this._div.classList.add("selectedText");
-        document.body.appendChild(this._div);
+        this._parent.appendChild(this._div);
 
         if(name !== undefined){
             this._nameDiv = document.createElement('div')
@@ -43,7 +46,7 @@ class Cursor{
             this._nameDiv.style.backgroundColor = `rgba(${cssColor.r}, ${cssColor.g}, ${cssColor.b}, 1.0)`
             this._nameDiv.classList.add("nameTag");
             this._nameDiv.innerHTML = name;
-            document.body.appendChild(this._nameDiv);
+            this._parent.appendChild(this._nameDiv);
         }
     }
 
@@ -130,9 +133,9 @@ class Cursor{
     }
 
     destroy(){
-        document.body.removeChild(this._div);
+        this._parent.removeChild(this._div);
         if(this._nameDiv)
-            document.body.removeChild(this._nameDiv);
+            this._parent.removeChild(this._nameDiv);
     }
 }
 
@@ -192,6 +195,7 @@ export class TextAreaCursors {
                     this._cursors.set(clientID, new Cursor(
                         fontSize,
                         color,
+                        textField,
                         name
                     ));
                 }
