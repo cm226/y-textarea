@@ -13,7 +13,7 @@
     }
   },
   "types": "./dist/y-textArea.d.ts",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "scripts": {
     "dev": "vite --host",
     "build": "tsc && vite build",
