@@ -11,6 +11,7 @@ app.innerHTML = `
   <textarea id="textArea"></textarea>
   <input type="text" id="textInput"></input>
   <button id="destroyBttn">Destroy</button>
+  <button id="newName">New Name</button>
 `
 
 
@@ -28,10 +29,10 @@ const yText = doc.getText("textArea");
 
 const rand = Math.floor(Math.random()*3);
 const names = ["Tiger", "Penguin", "Cat"];
-const color = [{r:47, g:226, b:147}, {r:18, g:214, b:70}, {r:87, g:96, b:202}];
+const color = [{r:0, g:0, b:255}, {r:0, g:255, b:0}, {r:255, g:0, b:0}];
 
 //@ts-ignore
-const areaBinding = new TextAreaBinding(
+let areaBinding = new TextAreaBinding(
   yText,
   textArea,
   {
@@ -57,3 +58,20 @@ if(destroyBttn !== null){
     areaBinding.destroy();
   };
 }
+
+const newNameBttn = document.querySelector<HTMLInputElement>('#newName');
+if(newNameBttn !== null){
+  newNameBttn.onclick = ()=>{
+    areaBinding.destroy();
+    areaBinding = new TextAreaBinding(
+      yText,
+      textArea,
+      {
+        awareness : wsProvider.awareness,
+        clientName:names[Math.floor(Math.random()*3)],
+        color : color[2]
+      }
+      );
+  };
+}
+

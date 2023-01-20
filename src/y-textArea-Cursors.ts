@@ -19,7 +19,7 @@ class Cursor{
     private _div : HTMLDivElement;
     private _nameDiv? : HTMLDivElement;
 
-    private _color : color;
+    private _color! : color;
     private _fontSize : string;
     private _selectedIndex : {start:number, end:number};
     private _name? : string;
@@ -29,27 +29,16 @@ class Cursor{
     constructor(fontSize : string, cssColor : color, element: HTMLTextAreaElement | HTMLInputElement, name? : string, ) {
         this._selectedIndex = {start:-1, end:-1};
         this._fontSize = fontSize;
-        this._color = cssColor;
-        this._name = name;
         this._parent = element.offsetParent || document.body;
         this._div = document.createElement('div')
         this._div.style.position = 'absolute'
-        this._div.style.backgroundColor = `rgba(${cssColor.r}, ${cssColor.g}, ${cssColor.b}, 0.4)`
         this._div.style.height = fontSize
         this._div.style.width = '1px'
         this._div.style.display = 'none';
         this._div.classList.add("selectedText");
         this._parent.appendChild(this._div);
-
-        if(name !== undefined){
-            this._nameDiv = document.createElement('div')
-            this._nameDiv.style.position = 'absolute';
-            this._nameDiv.style.display = 'none';
-            this._nameDiv.style.backgroundColor = `rgba(${cssColor.r}, ${cssColor.g}, ${cssColor.b}, 1.0)`
-            this._nameDiv.classList.add("nameTag");
-            this._nameDiv.innerHTML = name;
-            this._parent.appendChild(this._nameDiv);
-        }
+        
+        if(name !== undefined) this.updateCursor(name, cssColor);
     }
 
     show() {
@@ -64,22 +53,27 @@ class Cursor{
             this._nameDiv.style.display = 'none';
     }
 
-    setName(name: string) {
-        // Don't update DOM if name is the same
-        if (this._name === name) return;
+    updateCursor(name: string, cssColor : color) {
+        // Don't update if info is the same
+        if (this._name === name &&
+            this._color.r === cssColor.r && 
+            this._color.g === cssColor.g &&
+            this._color.b === cssColor.b) return;
 
+        this._color = cssColor;
         this._name = name;
-        if (this._nameDiv) {
-            this._nameDiv.innerHTML = name;
-            return;
+
+        if (!this._nameDiv) {
+            this._nameDiv = document.createElement('div')
+            this._nameDiv.style.position = 'absolute';
+            this._nameDiv.style.display = 'none';
+            this._nameDiv.classList.add("nameTag");
+            this._parent.appendChild(this._nameDiv);
         }
-        this._nameDiv = document.createElement('div')
-        this._nameDiv.style.position = 'absolute';
-        this._nameDiv.style.display = 'none';
-        this._nameDiv.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 1.0)`
-        this._nameDiv.classList.add("nameTag");
+
         this._nameDiv.innerHTML = name;
-        this._parent.appendChild(this._nameDiv);
+        this._nameDiv.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 1.0)`
+        this._div.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 0.4)`
     }
 
     setPosition(start : number, end: number) {
@@ -218,6 +212,13 @@ export class TextAreaCursors {
                 const color = user["color"] as color
                 const selection = user["selection"] as boolean
 
+                if(!this._cursors.has(clientID) && !selection) {
+                    // We don't know anything about this cursor yet, 
+                    // but its not selecting anything, when it does we will 
+                    // create it
+                    continue
+                }
+
                 if(!this._cursors.has(clientID)) { 
                     this._cursors.set(clientID, new Cursor(
                         fontSize,
@@ -228,13 +229,13 @@ export class TextAreaCursors {
                 }
                 const cursorMarker = this._cursors.get(clientID);
 
-                cursorMarker?.setName(name);
-
                 if(!selection) {
                     cursorMarker?.setPosition(-1,-1);
                     cursorMarker?.hide();
                     continue;
                 }
+
+                cursorMarker?.updateCursor(name, color);
 
                 if(encodedStart === undefined || encodedEnd === undefined) continue;
 
