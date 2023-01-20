@@ -22,6 +22,7 @@ class Cursor{
     private _color : color;
     private _fontSize : string;
     private _selectedIndex : {start:number, end:number};
+    private _name? : string;
 
     private _parent : Element;
 
@@ -29,6 +30,7 @@ class Cursor{
         this._selectedIndex = {start:-1, end:-1};
         this._fontSize = fontSize;
         this._color = cssColor;
+        this._name = name;
         this._parent = element.offsetParent || document.body;
         this._div = document.createElement('div')
         this._div.style.position = 'absolute'
@@ -60,6 +62,24 @@ class Cursor{
         this._div.style.display = 'none';
         if(this._nameDiv)
             this._nameDiv.style.display = 'none';
+    }
+
+    setName(name: string) {
+        // Don't update DOM if name is the same
+        if (this._name === name) return;
+
+        this._name = name;
+        if (this._nameDiv) {
+            this._nameDiv.innerHTML = name;
+            return;
+        }
+        this._nameDiv = document.createElement('div')
+        this._nameDiv.style.position = 'absolute';
+        this._nameDiv.style.display = 'none';
+        this._nameDiv.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 1.0)`
+        this._nameDiv.classList.add("nameTag");
+        this._nameDiv.innerHTML = name;
+        this._parent.appendChild(this._nameDiv);
     }
 
     setPosition(start : number, end: number) {
@@ -207,6 +227,8 @@ export class TextAreaCursors {
                     ));
                 }
                 const cursorMarker = this._cursors.get(clientID);
+
+                cursorMarker?.setName(name);
 
                 if(!selection) {
                     cursorMarker?.setPosition(-1,-1);
