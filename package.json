@@ -18,6 +18,8 @@
     "dev": "vite --host",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "version": "npm run build",
+    "release": "np",
     "test": "echo \"No test specified\"",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write ."
@@ -26,14 +28,14 @@
     "@rollup/plugin-typescript": "^8.3.1",
     "@types/textarea-caret": "^3.0.1",
     "fast-diff": "^1.2.0",
-    "np": "^7.6.0",
+    "np": "^7.6.3",
+    "prettier": "^2.8.3",
     "rectangle-overlap": "^2.0.0",
     "textarea-caret": "^3.1.0",
     "tslib": "^2.3.1",
     "typescript": "^4.5.4",
     "vite": "^2.8.0",
-    "y-websocket": "^1.3.18",
-    "prettier": "^2.8.3"
+    "y-websocket": "^1.3.18"
   },
   "peerDependencies": {
     "yjs": "^13.5.27"
