@@ -22,7 +22,7 @@ const AreaBinding = new TextAreaBinding(yTextArea, textArea);
 Shared cursors are not natively supported by input elements or text area, so y-textarea uses an absolutely positioned div with alpha for the shared cursors.
 
 To enable shared cursors, supply the "awareness" parameter in the options.
-y-textarea uses the ID attribute of the textarea to associate cursors to textareas, so ensure you uses consistent IDs all clients for textareas.
+y-textarea uses the ID attribute of the textarea to associate cursors to textareas, so ensure you use consistent IDs for all clients textareas.
 
 ```typescript
 const wsProvider = new WebsocketProvider(`ws://someURL:1234`, 'roomname', doc)
