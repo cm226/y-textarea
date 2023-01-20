@@ -7,14 +7,14 @@
   margin-top: 60px;
 }
 
-#textArea{
+#textArea {
   height: 256px;
   width: 256px;
 
   /* font-size: 30px;
   font-weight: bold; */
 
-  overflow-wrap:normal;
+  overflow-wrap: normal;
   overflow-x: scroll;
 }
 
@@ -28,6 +28,6 @@
   font-weight: 400;
   font-style: italic;
   font-size: 12px;
-  padding : 3px;
+  padding: 3px;
   border-radius: 3px;
 }

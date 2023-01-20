@@ -9,7 +9,7 @@ module.exports = defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/y-textArea.ts'),
       name: 'y-textArea',
-      fileName: (format) => `y-textArea.${format}.js`
+      fileName: (format) => `y-textArea.${format}.js`,
     },
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
@@ -19,19 +19,19 @@ module.exports = defineConfig({
         // Provide global variables to use in the UMD build
         // for externalized deps
         globals: {
-          'yjs' : 'Y'
-        }
+          yjs: 'Y',
+        },
       },
       plugins: [
         typescript({
-          'target': 'es2020',
-          'rootDir': resolvePath('./src'),
-          'declaration': true,
-          'declarationDir': resolvePath('./dist'),
+          target: 'es2020',
+          rootDir: resolvePath('./src'),
+          declaration: true,
+          declarationDir: resolvePath('./dist'),
           exclude: resolvePath('./node_modules/**'),
-          allowSyntheticDefaultImports: true
-        })
-      ]
-    }
-  }
+          allowSyntheticDefaultImports: true,
+        }),
+      ],
+    },
+  },
 })
