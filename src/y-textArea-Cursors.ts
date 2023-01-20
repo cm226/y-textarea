@@ -139,13 +139,14 @@ class Cursor{
     }
 }
 
+/*
+    This class handles the awareness data for all cursors on a textfield (local and remote)
+*/
 export class TextAreaCursors {
-    
-    private static areaIDCounter = 0;
 
     private _unobserveFns : VoidFunction[] = [];
     private _cursors : Map<number,Cursor> = new Map<number, Cursor>();
-    private _areaID : string = '';
+    private _areaID : string = ''; // ID for this textfield (used by all remote clients)
     private _textField? : HTMLTextAreaElement | HTMLInputElement;
 
     constructor(
@@ -153,8 +154,14 @@ export class TextAreaCursors {
         textField : HTMLTextAreaElement | HTMLInputElement,
         options : options) {
 
-        this._areaID = (TextAreaCursors.areaIDCounter++).toString();
+        this._areaID = textField.id;
         this._textField = textField;
+
+        if (textField.id === "") {
+            throw new Error(
+              "ID attribute is required on textarea/field if using cursors"
+            );
+        }
 
         if(textField.selectionStart === null || textField.selectionEnd === null){
             throw new Error("unSupported Input type");
