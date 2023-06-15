@@ -69,7 +69,7 @@ class Cursor {
       this._parent.appendChild(this._nameDiv)
     }
 
-    this._nameDiv.innerHTML = name
+    this._nameDiv.innerText = name
     this._nameDiv.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 1.0)`
     this._div.style.backgroundColor = `rgba(${this._color.r}, ${this._color.g}, ${this._color.b}, 0.4)`
   }
