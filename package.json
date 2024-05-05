@@ -8,8 +8,14 @@
   "module": "./dist/y-textArea.es.js",
   "exports": {
     ".": {
-      "import": "./dist/y-textArea.es.js",
-      "require": "./dist/y-textArea.umd.js"
+      "import": {
+        "types": "./dist/y-textArea.d.ts",
+        "default": "./dist/y-textArea.es.js"
+      },
+      "require": {
+        "types": "./dist/y-textArea.d.ts",
+        "default": "./dist/y-textArea.umd.js"
+      }
     }
   },
   "types": "./dist/y-textArea.d.ts",
