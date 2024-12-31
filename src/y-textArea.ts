@@ -78,9 +78,7 @@ export class TextAreaBinding {
     this._unobserveFns.push(() => yText.unobserve(yTextObserver))
 
     const onTextFieldInput = () => {
-      textfieldChanged = true
       const r = this.createRange(textField)
-
       let oldContent = yText.toString()
       let content = textField.value
       let diffs = diff(oldContent, content, r.left)
@@ -92,9 +90,11 @@ export class TextAreaBinding {
           pos += d[1].length
         } else if (d[0] === -1) {
           // DELETE
+          textfieldChanged = true
           yText.delete(pos, d[1].length)
         } else {
           // INSERT
+          textfieldChanged = true
           yText.insert(pos, d[1])
           pos += d[1].length
         }
