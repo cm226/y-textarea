@@ -80,25 +80,26 @@ export class TextAreaBinding {
     const onTextFieldInput = () => {
       textfieldChanged = true
       const r = this.createRange(textField)
-
       let oldContent = yText.toString()
       let content = textField.value
       let diffs = diff(oldContent, content, r.left)
       let pos = 0
-      for (let i = 0; i < diffs.length; i++) {
-        let d = diffs[i]
-        if (d[0] === 0) {
-          // EQUAL
-          pos += d[1].length
-        } else if (d[0] === -1) {
-          // DELETE
-          yText.delete(pos, d[1].length)
-        } else {
-          // INSERT
-          yText.insert(pos, d[1])
-          pos += d[1].length
+      doc.transact(tr => {
+        for (let i = 0; i < diffs.length; i++) {
+          let d = diffs[i]
+          if (d[0] === 0) {
+            // EQUAL
+            pos += d[1].length
+          } else if (d[0] === -1) {
+            // DELETE
+            yText.delete(pos, d[1].length)
+          } else {
+            // INSERT
+            yText.insert(pos, d[1])
+            pos += d[1].length
+          }
         }
-      }
+      })
     }
     textField.addEventListener('input', onTextFieldInput)
     this._unobserveFns.push(() =>
