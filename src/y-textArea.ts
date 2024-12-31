@@ -80,7 +80,6 @@ export class TextAreaBinding {
     const onTextFieldInput = () => {
       textfieldChanged = true
       const r = this.createRange(textField)
-      textfieldChanged = true
       let oldContent = yText.toString()
       let content = textField.value
       let diffs = diff(oldContent, content, r.left)
