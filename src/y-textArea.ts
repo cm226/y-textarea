@@ -84,7 +84,7 @@ export class TextAreaBinding {
       let content = textField.value
       let diffs = diff(oldContent, content, r.left)
       let pos = 0
-      doc.transact(tr => {
+      doc.transact((_) => {
         for (let i = 0; i < diffs.length; i++) {
           let d = diffs[i]
           if (d[0] === 0) {
